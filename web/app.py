@@ -3,6 +3,8 @@ import pandas as pd
 import os
 import matplotlib
 import matplotlib.pyplot as plt
+from streamlit.components.v1 import html
+import pydeck as pdk
 
 st.set_page_config(
     page_title="Social Data Analysis | Solar Energy Project",
@@ -23,31 +25,71 @@ else:
 # st.sidebar.write("Welcome to the Solar Energy Project. This project aims to analyze solar energy data from the danish company EasyGreen.")
 # st.sidebar.write("Please filter the data from the sidebar and the plots will apply your filters on change.")
 
-viz = st.sidebar.selectbox("Select visualization", ["Geographical Development", "Production Development"])
+# test, logo, _ = st.sidebar.columns([0.5, 1, 0.5])
+
+# with logo:
+#     st.image('dtuLogo.png', width=150)
+
+st.write('')
+
+viz = st.sidebar.selectbox("Select visualization", ["Solar Energy Data in Denmark", "EasyGreen Map Data", "EasyGreen Production Development"])
 
 # st.dataframe(data)
 
+if viz == "Solar Energy Data in Denmark":
+    # Integrafe html plot
+    st.title("General Solar Energy Data in Denmark")
+    st.write('')
+    #st.header("")
+    
+    # Google Data
+    googleData = pd.read_csv('final/data/multiTimeline.csv', header=1)
+    googleData['Week'] = googleData['Uge']
+    googleData['Week'] = pd.to_datetime(googleData['Week'], format='%Y-%m-%d')
+    googleData['Index'] = googleData['Solcelle: (Danmark)'].astype(float)
+
+    # Energinet Data
+    energinetData = pd.read_csv('final/data/energinetForecast.csv', sep=';', error_bad_lines=False, usecols=['HourDK', 'ForecastCurrent'])    
+    energinetData['HourDK'] = pd.to_datetime(energinetData['HourDK'])
+    energinetData['Production (MWh per hour)'] = energinetData['ForecastCurrent'].str.replace(',', '.').astype(float)    
+    
+    energinetData.set_index('HourDK', inplace=True)
+    energinetData = energinetData.resample('W').agg({'Production (MWh per hour)': 'sum'}).reset_index()
+    energinetData.rename(columns={'HourDK': 'Week'}, inplace=True)
+
+    # Sort by 'Week'
+    energinetData = energinetData.sort_values(by='Week')
+
+    # set minimum date to match in both dataframes. Use the maximum of the two minimum dates
+    minDate = max(energinetData['Week'].min(), googleData['Week'].min())
+    energinetData = energinetData[energinetData['Week'] >= minDate]
+    googleData = googleData[googleData['Week'] >= minDate]    
+
+    # accumulate the forecast data
+    energinetData['Accumulated Production (MWh per hour)'] = energinetData['Production (MWh per hour)'].cumsum()
+
+    st.subheader("Production from Solar Power in Denmark per week")
+    st.line_chart(energinetData, x = 'Week', y = 'Production (MWh per hour)', color='#228B22')
+    st.subheader("Accumulated Production from Solar Power in Denmark")
+    st.line_chart(energinetData, x = 'Week', y = 'Accumulated Production (MWh per hour)', color='#228B22')
+    st.subheader("Google Searches for Solar Power in Denmark per week")
+    st.line_chart(googleData, x = 'Week', y = 'Index')
+
 ## Map plot
 
-if viz == "Geographical Development":
-    st.header("Geo Development") 
+if viz == "EasyGreen Map Data":
+    st.header("EasyGreen Map Data") 
     st.subheader("The map below shows the development of EasyGreen's customers over time.")
 
 
     # Group by user_id and get the first usage_date and sum of totalProductPower
-    data = data.groupby('user_id').agg({'usage_date': 'min', 'totalProductPower': 'sum', 'latitude': 'mean',
-                                                  'longitude': 'mean', 'age': 'mean'}).reset_index()
-            
-    
-    # totalProductPower color
-    cmap = plt.cm.get_cmap('Greens')
-    norm = plt.Normalize(data['totalProductPower'].min(), data['totalProductPower'].max())
-    data['colorProductPower'] = data['totalProductPower'].apply(lambda x: matplotlib.colors.rgb2hex(cmap(norm(x))))
-
-    # age color
-    cmap = plt.cm.get_cmap('Purples')
-    norm = plt.Normalize(data['age'].min(), data['age'].max())
-    data['colorAge'] = data['age'].apply(lambda x: matplotlib.colors.rgb2hex(cmap(norm(x))))
+    data = data.groupby('user_id').agg({'usage_date': 'min',
+                                        'totalProductPower': 'mean',
+                                        'totalSelfUsePower': 'mean',
+                                        'latitude': 'mean',
+                                        'longitude': 'mean',
+                                        'age': 'mean'}).reset_index()
+                
 
     # Drop rows with missing latitude or longitude
     data = data.dropna(subset=['latitude', 'longitude'])
@@ -70,37 +112,65 @@ if viz == "Geographical Development":
     age_range = st.sidebar.slider("Select age range", 0, 100, (0, 100))
     data = data[(data['age'] >= age_range[0]) & (data['age'] <= age_range [1])]
 
+    ## Production range
+    production_range = st.sidebar.slider("Select production range", 0, 10000, (0, 10000))
+    data = data[(data['totalProductPower'] >= production_range[0]) & (data['totalProductPower'] <= production_range[1])]
+
     data.reset_index(inplace=True)
 
     ## Color by
-    color = st.sidebar.radio("Color by", ('None', 'Production', 'Age'))
+    elevation = st.sidebar.radio("Analyze by", ('Average Production', 'Average Utilized Production', 'Age'))
     
-    if color == 'Production':
-        color = 'colorProductPower'
-    elif color == 'Age':
-        color = 'colorAge'
-    else:
-        color = '#7CFC00'
+    if elevation == 'Average Production':
+        elevation_weight = 'totalProductPower'
+    elif elevation == 'Average Utilized Production':
+        elevation_weight = 'totalSelfUsePower'
+    elif elevation == 'Age':
+        elevation_weight = 'age'
 
-    # Adjust sizes of the points
+    # Add more colors?
 
-    st.map(data, color=color)    
+    max_range = int(data['totalProductPower'].max())
 
-    if color == 'colorProductPower':
-        st.image('greens.png', use_column_width=True, caption='Color scale for production: low --> high')
-    elif color == 'colorAge':
-        st.image('purples.png', use_column_width=True, caption='Color scale for age: young --> old')
+    layer = pdk.Layer(
+        "HexagonLayer" if elevation_weight != 'age' else "HeatmapLayer",
+        data=data,
+        get_position="[longitude, latitude]",
+        auto_highlight=True,
+        elevation_scale=3000,
+        pickable=True,
+        get_polygon="-",
+        get_fill_color=[0, 0, 0, 20],
+        stroked=False,
+        elevation_range=[0, max_range],
+        extruded=True,
+        coverage=1,
+        get_elevation_weight = elevation_weight,
+    )
+
+    view_state = pdk.ViewState(
+        longitude=10.38831, latitude=55.79594, zoom=6.2, min_zoom=5, max_zoom=11 if elevation_weight != 'age' else 7, pitch=41 if elevation_weight != 'age' else 0, bearing=20 if elevation_weight != 'age' else 0, height=1000
+    )
 
 
 
-    # TODO Create size and color column for the map plot▶️
+    # Combined all of it and render a viewport
+    r = pdk.Deck(
+        map_style="mapbox://styles/mapbox/dark-v9",
+        layers=[layer],
+        initial_view_state=view_state,
+        tooltip={
+                "html":f"<b>{elevation}:</b> {{elevationValue}}<br>",
+                "style": {"color": "white"}}        
+    )
 
+    st.pydeck_chart(r)
 
     
 
 # Accumulated production per month
 
-if viz == "Production Development":
+if viz == "EasyGreen Production Development":
 
     ## Production
 
