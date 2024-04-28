@@ -68,10 +68,14 @@ if viz == "Solar Energy Data in Denmark":
     # accumulate the forecast data
     energinetData['Accumulated Production (MWh per hour)'] = energinetData['Production (MWh per hour)'].cumsum()
 
+    # help: source https://www.energidataservice.dk/tso-electricity/Forecasts_Hour
     st.subheader("Production from Solar Power in Denmark per week")
     st.line_chart(energinetData, x = 'Week', y = 'Production (MWh per hour)', color='#228B22')
+    
     st.subheader("Accumulated Production from Solar Power in Denmark")
     st.line_chart(energinetData, x = 'Week', y = 'Accumulated Production (MWh per hour)', color='#228B22')
+
+    # help: source https://trends.google.com/trends/explore?date=today%205-y&geo=DK&q=%2Fm%2F078kl
     st.subheader("Google Searches for Solar Power in Denmark per week")
     st.line_chart(googleData, x = 'Week', y = 'Index')
 
