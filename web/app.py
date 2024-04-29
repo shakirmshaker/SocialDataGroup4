@@ -30,15 +30,11 @@ else:
     data = st.session_state.data
 
 
-test, logo, _ = st.sidebar.columns([0.5, 1, 0.5])
+st.sidebar.image('images/dtuLogo.png')
 
-with logo:
-    st.image('images/dtuLogo.png', width=150)
-
-st.sidebar.write('---')
-st.sidebar.title('Social Data Analysis')
-st.sidebar.write("Welcome to the Solar Energy Project. This project aims to analyze solar energy data from the danish company EasyGreen.")
-st.sidebar.write("Please filter the data from the sidebar and the plots will apply your filters on change.")
+# st.sidebar.title('Social Data Analysis')
+# st.sidebar.write("Welcome to the Solar Energy Project. This project aims to analyze solar energy data from the danish company EasyGreen.")
+#st.sidebar.write("Please filter the data from the sidebar and the plots will apply your filters on change.")
 
 st.write('')
 
@@ -77,8 +73,24 @@ if viz == "Solar Energy Data in Denmark":
     # accumulate the forecast data
     energinetData['Accumulated Production (MWh per hour)'] = energinetData['Production (MWh per hour)'].cumsum()
 
+    # Filters
+    dateRange = st.sidebar.date_input("Filter data by date range", value=(energinetData['Week'].min(), energinetData['Week'].max()), min_value=energinetData['Week'].min(), max_value=energinetData['Week'].max())
+    
+    
     # help: source https://www.energidataservice.dk/tso-electricity/Forecasts_Hour
     st.subheader("Production from Solar Power in Denmark per week")    
+    st.write('When ...')
+
+    showPeaks = st.checkbox('Highlight Peaks', value=False, key='showPeaks')
+
+    energinetData['Week'] = energinetData['Week'].dt.date
+    googleData['Week'] = googleData['Week'].dt.date
+
+    if len(dateRange) < 2:
+        st.spinner('Please select a date range of at least two different dates.')
+    else:
+        energinetData = energinetData[(energinetData['Week'] >= dateRange[0]) & (energinetData['Week'] <= dateRange[1])]
+        googleData = googleData[(googleData['Week'] >= dateRange[0]) & (googleData['Week'] <= dateRange[1])]
 
     energinetData['Above_15000'] = energinetData['Production (MWh per hour)'] > 15000
     energinetData['Segment'] = energinetData['Above_15000'].astype(int).diff().ne(0).cumsum()
@@ -95,13 +107,15 @@ if viz == "Solar Energy Data in Denmark":
         x=alt.X('Week:T'), 
         color=alt.condition(
             alt.datum.Above_15000,
-            alt.value('lightgreen'),  # True color
+            alt.value('lightgreen' if showPeaks else 'green'),  # True color
             alt.value('green')  # False color
         )
     )
     st.altair_chart(lines, use_container_width=True)
 
     st.subheader("Accumulated Production from Solar Power in Denmark")
+    st.write('Development over time ...')
+
     st.altair_chart(alt.Chart(energinetData).mark_line(color='#228B22').encode(
         x='Week',
         y='Accumulated Production (MWh per hour)'
@@ -111,6 +125,7 @@ if viz == "Solar Energy Data in Denmark":
 
     # help: source https://trends.google.com/trends/explore?date=today%205-y&geo=DK&q=%2Fm%2F078kl
     st.subheader("Google Searches for Solar Power in Denmark per week")
+    st.write('Gas price increase ...')
     st.altair_chart(alt.Chart(googleData).mark_line().encode(
         x='Week',
         y='Index'
