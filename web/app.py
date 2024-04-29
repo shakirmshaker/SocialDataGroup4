@@ -62,7 +62,7 @@ if viz == "Solar Energy Data in Denmark":
     energinetData = energinetData.resample('W').agg({'Production (MWh per hour)': 'sum'}).reset_index()
     energinetData.rename(columns={'HourDK': 'Week'}, inplace=True)
 
-    # Gas Prices Data
+    # Gas Prices Data. Source: https://ens.dk/service/statistik-data-noegletal-og-kort/priser-paa-el-og-gas
     gasPrices = pd.read_csv('../final/data/gasPrices.csv', sep=',')
     gasPrices['Date'] = pd.to_datetime(gasPrices['month'], format='%YM%m')
     gasPrices['Price DKK/GJ'] = gasPrices['price kr/GJ']
@@ -93,12 +93,14 @@ if viz == "Solar Energy Data in Denmark":
 
     energinetData['Date'] = energinetData['Week'].dt.date
     googleData['Date'] = googleData['Week'].dt.date
+    gasPrices['Date'] = gasPrices['Date'].dt.date
 
     if len(dateRange) < 2:
         st.spinner('Please select a date range of at least two different dates.')
     else:
         energinetData = energinetData[(energinetData['Date'] >= dateRange[0]) & (energinetData['Date'] <= dateRange[1])]
         googleData = googleData[(googleData['Date'] >= dateRange[0]) & (googleData['Date'] <= dateRange[1])]
+        gasPrices = gasPrices[(gasPrices['Date'] >= dateRange[0]) & (gasPrices['Date'] <= dateRange[1])]
 
     energinetData['Above_15000'] = energinetData['Production (MWh per hour)'] > 15000
     energinetData['Segment'] = energinetData['Above_15000'].astype(int).diff().ne(0).cumsum()
@@ -173,9 +175,7 @@ if viz == "Solar Energy Data in Denmark":
 ## Map plot
 
 if viz == "EasyGreen Map Data":
-    st.header("EasyGreen Map Data") 
-    st.subheader("The map below shows the development of EasyGreen's customers over time.")
-
+    st.title("EasyGreen Map Data")     
 
     # Group by user_id and get the first usage_date and sum of totalProductPower
     data = data.groupby('user_id').agg({'usage_date': 'min',
@@ -214,7 +214,7 @@ if viz == "EasyGreen Map Data":
 
     data.reset_index(inplace=True)
 
-    elevation = st.sidebar.radio("Analyze by", ('Average Production Per Day', 'Age'))
+    elevation = st.sidebar.radio("Analyze Map By", ('Average Production Per Day', 'Age'))
     
     if elevation == 'Average Production Per Day':
         elevation_weight = 'totalProductPower'
@@ -222,6 +222,14 @@ if viz == "EasyGreen Map Data":
         elevation_weight = 'totalSelfUsePower'
     elif elevation == 'Age':
         elevation_weight = 'age'
+    
+    if elevation == 'Average Production Per Day':
+        st.subheader("Visualization of Solar Power Production by EasyGreen Customers Across Denmark")
+        st.write('The plot displays a 3D hexagonal bin map visualization centered over Denmark, highlighting solar power production data for EasyGreen\'s customers. Each hexagonal column represents the geographic clustering of customers, and the height of the columns is proportional to the average daily solar power production. The highest solar power outputs are indicated by the tallest columns, color-coded in red and orange. The map provides geographic and quantitative insights into solar power distribution among EasyGreen\'s customer base.')
+    elif elevation == 'Age':
+        st.subheader("Visualization of EasyGreen's Customer Age Distribution Across Denmark")
+        st.write('The plot displays a heatmap distribution of EasyGreen\'s customers across Denmark, color-coded by age. The most concentrated areas with the oldest customer base are shown in red, with decreasing age groups represented by cooler colors, yellow to white. The densest area of older customers is located in the eastern part of Denmark. The heatmap settings have been configured to restrict zooming capabilities to safeguard privacy, ensuring individual customer data cannot be discerned, allowing only a macro view of the age distribution.')
+
 
     layer = pdk.Layer(
         "HexagonLayer" if elevation_weight != 'age' else "HeatmapLayer",
@@ -262,9 +270,9 @@ if viz == "EasyGreen Production Development":
 
     ## Production
 
-    st.header("Production and usage overview of EasyGreen's customers")
-
-    #st.subheader("")
+    st.title("Energy Dynamics: Comparative Analysis of Monthly Production and Usage")
+    st.write("The bar chart presents the average daily solar power production per month for EasyGreen's customers, measured in kWh. Each bar corresponds to a month, with its total height reflecting the average daily production and the darker green portion indicating the average utilized production. There is a clear seasonal trend, with the highest production occurring in the summer months, peaking in July, and the lowest in December, showcasing the variance in solar power generation and utilization throughout the year.")
+    st.write('')
 
     showSelfUse = st.sidebar.toggle('Show Utilized Production', True)    
     showNightUsage = st.sidebar.toggle('Show Night Usage', False, help = 'Night usage is calculated as the usage between 18:00 and 06:00')
@@ -337,6 +345,10 @@ if viz == "EasyGreen Production Development":
 
     # Plots
     st.altair_chart(production_chart+selfUse_chart if showSelfUse else production_chart, use_container_width=True)
+
+    st.header('Monthly Average Daily Electricity Usage in kWh at Home')
+    st.write('The bar chart represents the average daily electricity usage at home, measured in kWh, for each month. Each bar reflects the total average consumption per day within the respective month. Usage is highest in January and decreases through to the warmer months, with the lowest consumption in June, and then rises again towards the end of the year, with December showing a significant increase, suggesting seasonal influences on electricity demand among households.')    
+    st.write('')
     st.altair_chart(use_chart+nightUsage_chart if showNightUsage else use_chart, use_container_width=True)
 
 st.sidebar.write('---')
