@@ -14,8 +14,8 @@ st.set_page_config(
 )
 
 # list of files in the directory
-st.write(os.getcwd())
-st.write(os.listdir())
+# st.write(os.getcwd())
+# st.write(os.listdir())
 
 # change working directory to SocialDataGroup4/web if not already
 if 'web' not in os.getcwd():
@@ -60,7 +60,7 @@ if viz == "Solar Energy Data in Denmark":
     googleData['Index'] = googleData['Solcelle: (Danmark)'].astype(float)
 
     # Energinet Data
-    energinetData = pd.read_csv('../final/data/energinetForecast.csv', sep=';', error_bad_lines=False, usecols=['HourDK', 'ForecastCurrent'])    
+    energinetData = pd.read_csv('../final/data/energinetForecast.csv', sep=';', usecols=['HourDK', 'ForecastCurrent'])    
     energinetData['HourDK'] = pd.to_datetime(energinetData['HourDK'])
     energinetData['Production (MWh per hour)'] = energinetData['ForecastCurrent'].str.replace(',', '.').astype(float)    
     
