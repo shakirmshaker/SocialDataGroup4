@@ -14,8 +14,8 @@ st.set_page_config(
 )
 
 # list of files in the directory
-# st.write(os.getcwd())
-# st.write(os.listdir())
+st.write(os.getcwd())
+st.write(os.listdir())
 
 # change working directory to SocialDataGroup4/web if not already
 if 'web' not in os.getcwd():
