@@ -3,6 +3,7 @@ import pandas as pd
 from streamlit.components.v1 import html
 import pydeck as pdk
 import altair as alt
+import os
 
 
 st.set_page_config(
@@ -11,6 +12,10 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="auto",
 )
+
+# list of files in the directory
+st.write(os.getcwd())
+st.write(os.listdir())
 
 # read only data if it is not in session state
 if 'data' not in st.session_state:
