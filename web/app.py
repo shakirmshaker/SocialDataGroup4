@@ -1,8 +1,5 @@
 import streamlit as st
 import pandas as pd
-import os
-import matplotlib
-import matplotlib.pyplot as plt
 from streamlit.components.v1 import html
 import pydeck as pdk
 import altair as alt
