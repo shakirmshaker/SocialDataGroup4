@@ -38,12 +38,12 @@ st.sidebar.image('images/dtuLogo.png')
 
 st.write('')
 
-viz = st.sidebar.selectbox("Select visualization", ["Solar Energy Data in Denmark", "EasyGreen Map Data", "EasyGreen Production Development"])
+viz = st.sidebar.selectbox("Select page", ["Solar Energy Data in Denmark", "EasyGreen Map Data", "EasyGreen Production Development"])
 
 
 if viz == "Solar Energy Data in Denmark":
     # Integrafe html plot
-    st.title("General Solar Energy Data in Denmark")
+    st.title("Analyzing Denmark's Solar Power Landscape: Production, Accumulation, and Public Interest in Response to Gas Market Dynamics")
     st.write('')
     #st.header("")
     
@@ -62,13 +62,22 @@ if viz == "Solar Energy Data in Denmark":
     energinetData = energinetData.resample('W').agg({'Production (MWh per hour)': 'sum'}).reset_index()
     energinetData.rename(columns={'HourDK': 'Week'}, inplace=True)
 
+    # Gas Prices Data
+    gasPrices = pd.read_csv('../final/data/gasPrices.csv', sep=',')
+    gasPrices['Date'] = pd.to_datetime(gasPrices['month'], format='%YM%m')
+    gasPrices['Price DKK/GJ'] = gasPrices['price kr/GJ']
+
+    # Start date from energinetData minimum date
+    startDate = energinetData['Week'].min()
+    gasPrices = gasPrices[gasPrices['Date'] >= startDate]    
+
     # Sort by 'Week'
     energinetData = energinetData.sort_values(by='Week')
 
     # set minimum date to match in both dataframes. Use the maximum of the two minimum dates
     minDate = max(energinetData['Week'].min(), googleData['Week'].min())
     energinetData = energinetData[energinetData['Week'] >= minDate]
-    googleData = googleData[googleData['Week'] >= minDate]    
+    googleData = googleData[googleData['Week'] >= minDate]        
 
     # accumulate the forecast data
     energinetData['Accumulated Production (MWh per hour)'] = energinetData['Production (MWh per hour)'].cumsum()
@@ -76,35 +85,34 @@ if viz == "Solar Energy Data in Denmark":
     # Filters
     dateRange = st.sidebar.date_input("Filter data by date range", value=(energinetData['Week'].min(), energinetData['Week'].max()), min_value=energinetData['Week'].min(), max_value=energinetData['Week'].max())
     
-    
     # help: source https://www.energidataservice.dk/tso-electricity/Forecasts_Hour
-    st.subheader("Production from Solar Power in Denmark per week")    
-    st.write('When ...')
+    st.subheader("Denmark's Solar Power Surge and Seasonal Trends in Response to Rising Gas Prices")    
+    st.write('The time series graph portrays Denmark\'s solar power production from 2020 through April 2024 in MWh per hour. The data exhibits clear seasonality, with production escalating in summer due to more sunlight and receding in winter. Interestingly, before the pronounced production dip at the end of 2023, there\'s an exceptional peak surpassing other summer highs. This peak corresponds to a dramatic hike in gas prices in the winter 2022, reaching 27 kr per m3 in its highest, prompting increased dependency on solar energy. Additionally, the early onset of the 2024 summer production peak suggests an acceleration in solar investments by private households and others, resulting in a more substantial and earlier increase in solar power generation.')
 
     showPeaks = st.checkbox('Highlight Peaks', value=False, key='showPeaks')
 
-    energinetData['Week'] = energinetData['Week'].dt.date
-    googleData['Week'] = googleData['Week'].dt.date
+    energinetData['Date'] = energinetData['Week'].dt.date
+    googleData['Date'] = googleData['Week'].dt.date
 
     if len(dateRange) < 2:
         st.spinner('Please select a date range of at least two different dates.')
     else:
-        energinetData = energinetData[(energinetData['Week'] >= dateRange[0]) & (energinetData['Week'] <= dateRange[1])]
-        googleData = googleData[(googleData['Week'] >= dateRange[0]) & (googleData['Week'] <= dateRange[1])]
+        energinetData = energinetData[(energinetData['Date'] >= dateRange[0]) & (energinetData['Date'] <= dateRange[1])]
+        googleData = googleData[(googleData['Date'] >= dateRange[0]) & (googleData['Date'] <= dateRange[1])]
 
     energinetData['Above_15000'] = energinetData['Production (MWh per hour)'] > 15000
     energinetData['Segment'] = energinetData['Above_15000'].astype(int).diff().ne(0).cumsum()
     df_endpoints = energinetData.copy()
-    df_endpoints['Week'] = df_endpoints['Week'].shift(-1)
+    df_endpoints['Date'] = df_endpoints['Date'].shift(-1)
     df_endpoints['Production (MWh per hour)'] = df_endpoints['Production (MWh per hour)'].shift(-1)
-    df_final = pd.concat([energinetData, df_endpoints]).sort_values(by=['Week', 'Segment']).dropna()
+    df_final = pd.concat([energinetData, df_endpoints]).sort_values(by=['Date', 'Segment']).dropna()
     base = alt.Chart(df_final).encode(
         x='Week:O',  # Ordinal data
         y='Production (MWh per hour):Q',  # Quantitative data
         detail='Segment:N'  # Use segment number as detail to differentiate lines
     )
     lines = base.mark_line().encode(
-        x=alt.X('Week:T'), 
+        x=alt.X('Date:T'), 
         color=alt.condition(
             alt.datum.Above_15000,
             alt.value('lightgreen' if showPeaks else 'green'),  # True color
@@ -113,25 +121,54 @@ if viz == "Solar Energy Data in Denmark":
     )
     st.altair_chart(lines, use_container_width=True)
 
-    st.subheader("Accumulated Production from Solar Power in Denmark")
-    st.write('Development over time ...')
+    st.subheader("Denmark's Solar Energy Growth: Accelerated Accumulation Amidst Gas Price Surge and Solar Investments")
+    st.write("The accumulated solar power production curve for Denmark, from 2020 to April 2024, shows a steady climb in megawatt-hours. The rate of accumulation notably spikes in 2023, reflecting a response to a surge in gas prices and an increase in solar investments. Entering 2024, the earlier rise in the curve indicates a stronger and earlier seasonal peak, suggesting an expansion in solar capacity due to new installations by private households and other contributors.")
 
     st.altair_chart(alt.Chart(energinetData).mark_line(color='#228B22').encode(
-        x='Week',
+        x='Date',
         y='Accumulated Production (MWh per hour)'
     ).properties(
         width='container'
     ), use_container_width=True)
 
     # help: source https://trends.google.com/trends/explore?date=today%205-y&geo=DK&q=%2Fm%2F078kl
-    st.subheader("Google Searches for Solar Power in Denmark per week")
-    st.write('Gas price increase ...')
-    st.altair_chart(alt.Chart(googleData).mark_line().encode(
-        x='Week',
-        y='Index'
-    ).properties(
-        width='container'
-    ), use_container_width=True)
+    st.subheader("Google Trends: Solar Power Search Interest in Denmark")
+    st.write('This Google Trends graph tracks the search interest for solar power in Denmark from 2020 to April 2024. It shows a variable interest level over the years, with a significant spike in the winter of 2022. This spike correlates with the substantial increase in gas prices during that period, which likely prompted the public to explore solar power as an alternative. Following this heightened interest, solar power production peaked in the summer of 2023, suggesting a direct link between search behavior and actual adoption of solar solutions. The graph indicates that as gas prices escalated, Danish citizens turned to online searches to inform decisions on solar energy investments.')
+    showGasPrice = st.checkbox('Show Gas Prices', value=False, key='showGasPrices')
+    # Create a chart with two y-axes 
+
+    googleData['Date'] = pd.to_datetime(googleData['Date'])
+    gasPrices['Date'] = pd.to_datetime(gasPrices['Date'])
+    date_range = pd.date_range(start=googleData['Date'].min(), end=googleData['Date'].max())
+    date_df = pd.DataFrame(date_range, columns=['Date'])
+    googleData = pd.merge(date_df, googleData, on='Date', how='outer')
+    gasPrices = pd.merge(date_df, gasPrices, on='Date', how='outer')
+    googleData['Index'] = googleData['Index'].interpolate(method='linear')
+    gasPrices['Price DKK/GJ'] = gasPrices['Price DKK/GJ'].interpolate(method='linear')
+    mergedData = pd.merge(googleData, gasPrices, on='Date', how='outer')
+
+    # Base chart
+    base = alt.Chart(mergedData).encode(
+        alt.X('Date:T')
+    )
+
+    # First line chart
+    line1 = base.mark_line(color='blue').encode(
+        alt.Y('Index', axis=alt.Axis(title='Index', titleColor='blue'))
+    )
+
+    # Second line chart
+    line2 = base.mark_line(color='red').encode(
+        alt.Y('Price DKK/GJ', axis=alt.Axis(title='Price DKK/GJ', titleColor='red', grid=True))
+    )
+
+    
+    chart = alt.layer(line1, line2).resolve_scale(y='independent')
+
+    if showGasPrice:
+        st.altair_chart(chart, use_container_width=True)
+    else:
+        st.altair_chart(line1, use_container_width=True)
 
 ## Map plot
 
@@ -177,7 +214,7 @@ if viz == "EasyGreen Map Data":
 
     data.reset_index(inplace=True)
 
-    elevation = st.sidebar.radio("Analyze by", ('Average Production Per Day', 'Average Utilized Production Per Day', 'Age'))
+    elevation = st.sidebar.radio("Analyze by", ('Average Production Per Day', 'Age'))
     
     if elevation == 'Average Production Per Day':
         elevation_weight = 'totalProductPower'
@@ -205,7 +242,6 @@ if viz == "EasyGreen Map Data":
     view_state = pdk.ViewState(
         longitude=10.38831, latitude=55.79594, zoom=6.2, min_zoom=5, max_zoom=11 if elevation_weight != 'age' else 7, pitch=41 if elevation_weight != 'age' else 0, bearing=20 if elevation_weight != 'age' else 0, height=700
     )
-
 
 
     # Combined all of it and render a viewport
