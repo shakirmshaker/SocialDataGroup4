@@ -39,18 +39,27 @@ else:
 st.sidebar.image('images/dtuLogo.png')
 
 # st.sidebar.title('Social Data Analysis')
-# st.sidebar.write("Welcome to the Solar Energy Project. This project aims to analyze solar energy data from the danish company EasyGreen.")
+# st.sidebar.write("Welcome to the Solar Energy Project. This project aims to analyze solar energy data from the Danish company EasyGreen.")
 #st.sidebar.write("Please filter the data from the sidebar and the plots will apply your filters on change.")
 
 st.write('')
 
-viz = st.sidebar.selectbox("Select page", ["Solar Energy Data in Denmark", "EasyGreen Map Data", "EasyGreen Production Development"])
+viz = st.sidebar.selectbox("Select page", ["Home","Solar Energy Data in Denmark", "EasyGreen Geospatial Data", "EasyGreen Production Development","Summary and Conclusions","Sources"])
 
+if viz=="Home":
+    st.title("Course 02806 | Analysis of Solar Energy Usage and Production in Denmark")
+    st.write("Welcome to our Solar Energy Project. Here, we delve into the fascinating world of solar power production and usage in Denmark. Please select the page you wish to explore on the sidebar to the left. There, you can also filter the data to customize your analysis.")
+    st.write('')
+    st.write("Our project is organized into three primary sections. The first section deals with total solar energy production and demand in Denmark in the context of rising gas prices. The second and third section are both based on data from the private solar energy company “EasyGreen”. Their dataset contains information on daily electricity usage and production on a household level. Geospatial visualizations as well as comparisons of production and self-usage can be explored. Subsequently, the main findings of the comparative analysis are summarized.")
 
+    #add some picture
 if viz == "Solar Energy Data in Denmark":
     # Integrafe html plot
-    st.title("Analyzing Denmark's Solar Power Landscape: Production, Accumulation, and Public Interest in Response to Gas Market Dynamics")
+    st.title("An introduction to the Danish Solar Power Landscape")
     st.write('')
+    st.write("Solar energy as a renewable source of power production has become increasingly prominent and relevant in Denmark. Not only efforts to slow down catastrophic climate change, but also recent geopolitical events such as the war in Ukraine leading to a shortage of natural gas in many European countries have moved many Danish households to consider installing solar panels on their rooftops.")
+    st.write('')
+    st.write("Therefore, this section investigates the usage of and demand for solar energy, as well as the influence of rising gas prices.")
     #st.header("")
     
     # Google Data
@@ -93,7 +102,7 @@ if viz == "Solar Energy Data in Denmark":
     
     # help: source https://www.energidataservice.dk/tso-electricity/Forecasts_Hour
     st.subheader("Denmark's Solar Power Surge and Seasonal Trends in Response to Rising Gas Prices")    
-    st.write('The time series graph portrays Denmark\'s solar power production from 2020 through April 2024 in MWh per hour. The data exhibits clear seasonality, with production escalating in summer due to more sunlight and receding in winter. Interestingly, before the pronounced production dip at the end of 2023, there\'s an exceptional peak surpassing other summer highs. This peak corresponds to a dramatic hike in gas prices in the winter 2022, reaching 27 kr per m3 in its highest, prompting increased dependency on solar energy. Additionally, the early onset of the 2024 summer production peak suggests an acceleration in solar investments by private households and others, resulting in a more substantial and earlier increase in solar power generation.')
+    st.write('This time series graph portrays the solar power production in Denmark from 2020 through April 2024 in MWh per hour. The data exhibits clear seasonality, with production escalating in summer due to more sunlight and receding in winter. Interestingly, before the pronounced production dip at the end of 2023, there\'s an exceptional peak surpassing other summer highs. This peak corresponds to a dramatic hike in gas prices in the winter 2022, reaching 27 kr per m³ in its highest, prompting increased dependency on solar energy. Additionally, the early onset of the 2024 summer production peak suggests an acceleration in solar investments by private households and others, resulting in a more substantial and earlier increase in solar power generation.')
 
     showPeaks = st.checkbox('Highlight Peaks', value=False, key='showPeaks')
 
@@ -128,16 +137,24 @@ if viz == "Solar Energy Data in Denmark":
         )
     )
     st.altair_chart(lines, use_container_width=True)
+    st.caption("Total solar power production in Denmark [MWh/hour]")
 
-    st.subheader("Denmark's Solar Energy Growth: Accelerated Accumulation Amidst Gas Price Surge and Solar Investments")
-    st.write("The accumulated solar power production curve for Denmark, from 2020 to April 2024, shows a steady climb in megawatt-hours. The rate of accumulation notably spikes in 2023, reflecting a response to a surge in gas prices and an increase in solar investments. Entering 2024, the earlier rise in the curve indicates a stronger and earlier seasonal peak, suggesting an expansion in solar capacity due to new installations by private households and other contributors.")
 
-    st.altair_chart(alt.Chart(energinetData).mark_line(color='#228B22').encode(
-        x='Date',
-        y='Accumulated Production (MWh per hour)'
-    ).properties(
-        width='container'
-    ), use_container_width=True)
+    # The following plot is does not contain any new information
+
+    # st.subheader("Denmark's Solar Energy Growth: Accelerated Accumulation Amidst Gas Price Surge and Solar Investments")
+    # st.write("The accumulated solar power production curve for Denmark, from 2020 to April 2024, shows a steady climb in megawatt-hours. The rate of accumulation notably spikes in 2023, reflecting a response to a surge in gas prices and an increase in solar investments. Entering 2024, the earlier rise in the curve indicates a stronger and earlier seasonal peak, suggesting an expansion in solar capacity due to new installations by private households and other contributors.")
+
+    # st.altair_chart(alt.Chart(energinetData).mark_line(color='#228B22').encode(
+    #     x='Date',
+    #     y='Accumulated Production (MWh per hour)'
+    # ).properties(
+    #     width='container'
+    # ), use_container_width=True)
+
+
+
+
 
     # help: source https://trends.google.com/trends/explore?date=today%205-y&geo=DK&q=%2Fm%2F078kl
     st.subheader("Google Trends: Solar Power Search Interest in Denmark")
@@ -178,10 +195,12 @@ if viz == "Solar Energy Data in Denmark":
     else:
         st.altair_chart(line1, use_container_width=True)
 
+    st.caption("Solar power search interest and gas prices in Denmark")
+
 ## Map plot
 
-if viz == "EasyGreen Map Data":
-    st.title("EasyGreen Map Data")     
+if viz == "EasyGreen Geospatial Data":
+    st.title("EasyGreen Geospatial Data")     
 
     # Group by user_id and get the first usage_date and sum of totalProductPower
     data = data.groupby('user_id').agg({'usage_date': 'min',
@@ -231,6 +250,8 @@ if viz == "EasyGreen Map Data":
     
     if elevation == 'Average Production Per Day':
         st.subheader("Visualization of Solar Power Production by EasyGreen Customers Across Denmark")
+        st.write('')
+        st.write("One way to represent data provided by EasyGreen is to spatially visualize the solar power production of their customers across Denmark. The age group and location of each household are provided and allow for a detailed analysis. Feel free to explore the data by adjusting the sliders on the sidebar.")
         st.write('The plot displays a 3D hexagonal bin map visualization centered over Denmark, highlighting solar power production data for EasyGreen\'s customers. Each hexagonal column represents the geographic clustering of customers, and the height of the columns is proportional to the average daily solar power production. The highest solar power outputs are indicated by the tallest columns, color-coded in red and orange. The map provides geographic and quantitative insights into solar power distribution among EasyGreen\'s customer base.')
     elif elevation == 'Age':
         st.subheader("Visualization of EasyGreen's Customer Age Distribution Across Denmark")
@@ -269,6 +290,7 @@ if viz == "EasyGreen Map Data":
     )
 
     st.pydeck_chart(r)    
+    st.caption("Geospatial distribution of EasyGreen's customers based on solar power production and age")
 
 # Accumulated production per month
 
@@ -276,8 +298,10 @@ if viz == "EasyGreen Production Development":
 
     ## Production
 
-    st.title("Energy Dynamics: Comparative Analysis of Monthly Production and Usage")
-    st.write("The bar chart presents the average daily solar power production per month for EasyGreen's customers, measured in kWh. Each bar corresponds to a month, with its total height reflecting the average daily production and the darker green portion indicating the average utilized production. There is a clear seasonal trend, with the highest production occurring in the summer months, peaking in July, and the lowest in December, showcasing the variance in solar power generation and utilization throughout the year.")
+    st.title("Energy Dynamics: Comparing Production and Usage")
+    st.write("TThe EasyGreen dataset contains several intriguing features related to solar energy. These include daily solar power production, self-used electricity generated by solar panels, and total electricity consumption in individual households. These measurements help us better understand the interplay between solar energy production and usage within private homes. The following interactive figures provide a more detailed visualization of this relationship.")
+    st.subheader("EasyGreen's Solar Power Production and Utilization")
+    st.write("The bar chart presents the average solar power production per month for EasyGreen's customers, measured in kWh/day. Each bar corresponds to a month, with its total height reflecting the average daily production and the darker green portion indicating the average utilized production. There is a clear seasonal trend, with the highest production occurring in the summer months, peaking in July, and the lowest in December, showcasing the variance in solar power generation and utilization throughout the year.")
     st.write('')
 
     showSelfUse = st.sidebar.toggle('Show Utilized Production', True)    
@@ -307,7 +331,7 @@ if viz == "EasyGreen Production Development":
     # Charts
     production_chart = alt.Chart(production_data).mark_bar(color = 'green', opacity=0.5).encode(
         x=alt.X('usage_month:N', title='Month', sort=month_order),  # Specify nominal data with :N
-        y=alt.Y('totalProductPower:Q', title='Production in kWh'),  # Specify quantitative data with :Q
+        y=alt.Y('totalProductPower:Q', title='Production in kWh per day'),  # Specify quantitative data with :Q
             tooltip=[
                 alt.Tooltip('usage_month:N', title='Month'),
                 alt.Tooltip('totalProductPower:Q', title='Average Production per Day')
@@ -329,7 +353,7 @@ if viz == "EasyGreen Production Development":
 
     use_chart = alt.Chart(totalUsePower_data).mark_bar(color = 'red', opacity=0.5).encode(
             x=alt.X('usage_month:N', sort=month_order, title = 'Month'),  # Specify nominal data with :N
-            y=alt.Y('totalUsePower:Q', title= 'Usage in kWh'),
+            y=alt.Y('totalUsePower:Q', title= 'Usage in kWh per day'),
             tooltip=[
                 alt.Tooltip('usage_month:N', title='Month'),
                 alt.Tooltip('totalUsePower:Q', title='Usage in kWh per Day')
@@ -351,13 +375,41 @@ if viz == "EasyGreen Production Development":
 
     # Plots
     st.altair_chart(production_chart+selfUse_chart if showSelfUse else production_chart, use_container_width=True)
+    st.caption("Average monthly solar power production (and utilized production) in kWh/day")
 
-    st.header('Monthly Average Daily Electricity Usage in kWh at Home')
+    st.subheader('Day and Night Electricity Usage')
     st.write('The bar chart represents the average daily electricity usage at home, measured in kWh, for each month. Each bar reflects the total average consumption per day within the respective month. Usage is highest in January and decreases through to the warmer months, with the lowest consumption in June, and then rises again towards the end of the year, with December showing a significant increase, suggesting seasonal influences on electricity demand among households.')    
     st.write('')
     st.altair_chart(use_chart+nightUsage_chart if showNightUsage else use_chart, use_container_width=True)
+    st.caption("Average monthly electricity usage (and night usage) per month in kWh/day")
 
+if viz == "Summary and Conclusions":
+    st.title("Summary and Conclusions")
+    
+    # st.write("The analysis of solar power production and usage data in Denmark provides valuable insights into the country's energy dynamics, customer distribution, and response to gas market fluctuations. The project delves into the seasonal trends in solar power generation, highlighting the peak production months and the corresponding dip in winter. The data also reveals a direct correlation between the surge in gas prices and the increased interest in solar power solutions among Danish citizens, leading to a rise in solar investments and production.")
+    # st.write('')
+    # st.write("The geospatial analysis of EasyGreen's customer data showcases the distribution of solar power production and customer age across Denmark. The 3D hexagonal bin map visualizes the clustering of customers based on their solar power production, providing insights into the geographic concentration of solar energy generation. The heatmap representation of customer age distribution reveals the age demographics of EasyGreen's customers, with the eastern part of Denmark showing a higher concentration of older customers.")
+    # st.write('')
+    # st.write("The monthly production and usage analysis demonstrates the seasonal trends in solar power generation and electricity consumption. The bar charts display the average daily solar power production, utilized production, and electricity usage per month, highlighting the fluctuations in solar power generation and consumption throughout the year. The data indicates a direct relationship between solar power production and electricity usage, with the highest production and consumption occurring in the winter months.")
+    # st.write('')
+    # st.write("In conclusion, the project provides a comprehensive analysis of solar power dynamics in Denmark, offering insights into solar energy production, customer distribution, and energy usage. The findings underscore the importance of solar power as a sustainable energy source and its potential to mitigate the impact of rising gas prices. The project aims to inform policymakers, energy companies, and the public about the benefits of solar energy and the need for increased investments in renewable energy solutions.")
+    # st.write('')
+
+if viz == "Sources":
+    st.title("Sources")
+    st.write("The data used in this project was provided by EasyGreen, a Danish company specializing in solar energy solutions. The project utilized solar power production and usage data, as well as geospatial data on EasyGreen's customers, to analyze solar energy dynamics in Denmark.")
+    st.write('')
+    st.write("The project also incorporated data from Energiedataservie, Energistyrelsen and Google Trends. Please see the following links for more information.")
+    st.write('')
+    st.write("https://www.energidataservice.dk/tso-electricity/Forecasts_Hour")
+    st.write('')
+    st.write("https://ens.dk/service/statistik-data-noegletal-og-kort/priser-paa-el-og-gas")
+    st.write('')
+    st.write("https://trends.google.com/trends/explore?date=today%205-y&geo=DK&q=%2Fm%2F078kl")
 st.sidebar.write('---')
+
+
+
 st.sidebar.write("This project was created in the 02806 Social data analysis and visualization course at DTU. The group consists of the following members:")
 st.sidebar.write(" * Shakir Maytham Shaker")
 st.sidebar.write(" * Magnus Mac Doberenz")
