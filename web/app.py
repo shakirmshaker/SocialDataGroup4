@@ -228,7 +228,6 @@ if viz == "EasyGreen Geospatial Data":
 
     # Sort by usage_date
     data = data.sort_values(by='usage_date')
-    age_data=data[(data.age>=18) & (data.age<=99)]
     # Filters
 
     ## example return (datetime.date(2024, 1, 31), datetime.date(2024, 3, 28))
@@ -246,19 +245,18 @@ if viz == "EasyGreen Geospatial Data":
 
     ## Age groups
     age_groups=st.sidebar.multiselect("Filter map by age groups", ["18-44","45-53","54-63","64-99"])
-    age_group_ind=[age_data.age<=44,
-                    (age_data.age>44) & (age_data.age<=53),
-                    (age_data.age>53) & (age_data.age<=64),
-                    age_data.age>64]
+    age_group_ind=[(data.age>17) & (data.age<=44),
+                    (data.age>44) & (data.age<=53),
+                    (data.age>53) & (data.age<=64),
+                    (data.age>64) & (data.age<=99)]
     
     if len(age_groups)>0:
-        #data_ind=[]    
-        #for i,age_group in enumerate(age_groups):
-        #    if age_group:
-        #        data_ind.append(age_group_ind[i])
-        #data=data[data_ind]
-        data=data[age_data.age<50]
-        st.write(age_groups)
+
+        age_data=data[data.index<0]
+        for i,age_group in enumerate(age_groups):
+            if age_group:
+                age_data=pd.concat(age_data,data[age_group_ind[i]])
+        data=age_data.copy()
 
     ## Production range
     max_range = int(data['totalProductPower'].max())
