@@ -252,11 +252,13 @@ if viz == "EasyGreen Geospatial Data":
                     age_data.age>64]
     
     if len(age_groups)>0:
-        data_ind=[]    
-        for i,age_group in enumerate(age_groups):
-            if age_group:
-                data_ind.append(age_group_ind[i])
-        data=data[data_ind]
+        #data_ind=[]    
+        #for i,age_group in enumerate(age_groups):
+        #    if age_group:
+        #        data_ind.append(age_group_ind[i])
+        #data=data[data_ind]
+        data=data[age_data.age<50]
+        st.write(age_groups)
 
     ## Production range
     max_range = int(data['totalProductPower'].max())
