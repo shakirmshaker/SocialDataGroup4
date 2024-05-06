@@ -51,8 +51,9 @@ if viz=="Home":
     st.write("Welcome to our Solar Energy Project. Here, we delve into the fascinating world of solar power production and usage in Denmark. Please select the page you wish to explore on the sidebar to the left. There, you can also filter the data to customize your analysis.")
     st.write('')
     st.write("Our project is organized into three primary sections. The first section deals with total solar energy production and demand in Denmark in the context of rising gas prices. The second and third section are both based on data from the private solar energy company “EasyGreen”. Their dataset contains information on daily electricity usage and production on a household level. Geospatial visualizations as well as comparisons of production and self-usage can be explored. Subsequently, the main findings of the comparative analysis are summarized.")
-    st.image('images/houses_solar_panels.jpeg', use_column_width=True)
-    #add some picture
+    st.write('')
+    st.image('images/houses_solar_panels.jpeg')
+    st.caption("Figure 1: Image created using Microsoft Copilot with the prompt Houses with solar panels")
 if viz == "Solar Energy Data in Denmark":
     # Integrafe html plot
     st.title("An introduction to the Danish Solar Power Landscape")
