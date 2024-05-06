@@ -26,10 +26,21 @@ if 'data' not in st.session_state:
     data = pd.read_csv("../final/data/dfMerged.csv")
     data['usage_date'] = pd.to_datetime(data['usage_date'])
     
+    df_age=pd.read_csv('../final/data/user_id-age.csv',sep=';')
+    df_age.rename(columns={'Kunde ID':'user_id','Fødselsdato':'birth_date'},inplace=True)
+    df_age['birth_date']=pd.to_datetime(df_age['birth_date'], errors='coerce',format='%d/%m/%Y')
+    df_age['age']=2024-df_age['birth_date'].dt.year
+
+    data.drop(columns=['age'],inplace=True)
+    data=pd.merge(data,df_age[['user_id','age']],on='user_id',how='left')
+
+    #remove outliers
+    data=data[(data.totalUsePower<500) & (data.totalProductPower<500) & (data.totalSelfUsePower<500) & (data.totalBuyPower<500)]
+    data=data[(data.age>=18) & (data.age<=99)]
     # remove max value from data['totalUsePower']
 
-    usePowerMax = data['totalUsePower'].max()
-    data['totalUsePower'] = data['totalUsePower'].apply(lambda x: x if x < usePowerMax else 0)
+    # usePowerMax = data['totalUsePower'].max()
+    # data['totalUsePower'] = data['totalUsePower'].apply(lambda x: x if x < usePowerMax else 0)
 
     st.session_state.data = data
 else:
@@ -56,7 +67,7 @@ if viz=="Home":
     st.caption("Figure 1: Image created using Microsoft Copilot with the prompt Houses with solar panels")
 if viz == "Solar Energy Data in Denmark":
     # Integrafe html plot
-    st.title("An introduction to the Danish Solar Power Landscape")
+    st.title("An Introduction to the Danish Solar Power Landscape")
     st.write('')
     st.write("Solar energy as a renewable source of power production has become increasingly prominent and relevant in Denmark. Not only efforts to slow down catastrophic climate change, but also recent geopolitical events such as the war in Ukraine leading to a shortage of natural gas in many European countries have moved many Danish households to consider installing solar panels on their rooftops.")
     st.write('')
@@ -138,7 +149,7 @@ if viz == "Solar Energy Data in Denmark":
         )
     )
     st.altair_chart(lines, use_container_width=True)
-    st.caption("Total solar power production in Denmark [MWh/hour]")
+    st.caption("Figure 2: Total solar power production in Denmark [MWh/hour]")
 
 
     # The following plot is does not contain any new information
@@ -196,7 +207,7 @@ if viz == "Solar Energy Data in Denmark":
     else:
         st.altair_chart(line1, use_container_width=True)
 
-    st.caption("Solar power search interest and gas prices in Denmark")
+    st.caption("Figure 3: Solar power search interest and gas prices in Denmark")
 
 ## Map plot
 
@@ -233,6 +244,9 @@ if viz == "EasyGreen Geospatial Data":
     age_range = st.sidebar.slider("Filter map by customer age range", 0, 100, (0, 100))
     data = data[(data['age'] >= age_range[0]) & (data['age'] <= age_range [1])]
 
+    ## Age groups
+    age_groups=st.sidebar.multiselect("Filter map by age groups", ["18-44","45-53","54-63","64-99"])
+
     ## Production range
     max_range = int(data['totalProductPower'].max())
     production_range = st.sidebar.slider("Filter map by daily production range", 0, max_range, (0, max_range))
@@ -240,7 +254,7 @@ if viz == "EasyGreen Geospatial Data":
 
     data.reset_index(inplace=True)
 
-    elevation = st.sidebar.radio("Analyze Map By", ('Average Production Per Day', 'Age'))
+    elevation = st.sidebar.radio("Analyze Map By", ('Average Production Per Day','Average Utilized Production Per Day', 'Age'))
     
     if elevation == 'Average Production Per Day':
         elevation_weight = 'totalProductPower'
@@ -292,7 +306,7 @@ if viz == "EasyGreen Geospatial Data":
     )
 
     st.pydeck_chart(r)    
-    st.caption("Geospatial distribution of EasyGreen's customers based on solar power production and age")
+    st.caption("Figure 4: Geospatial distribution of EasyGreen's customers based on solar power production and age")
 
 # Accumulated production per month
 
@@ -377,13 +391,13 @@ if viz == "EasyGreen Production Development":
 
     # Plots
     st.altair_chart(production_chart+selfUse_chart if showSelfUse else production_chart, use_container_width=True)
-    st.caption("Average monthly solar power production (and utilized production) in kWh/day")
+    st.caption("Figure 5: Average monthly solar power production (and utilized production) in kWh/day")
 
     st.subheader('Day and Night Electricity Usage')
     st.write('The bar chart represents the average daily electricity usage at home, measured in kWh, for each month. Each bar reflects the total average consumption per day within the respective month. Usage is highest in January and decreases through to the warmer months, with the lowest consumption in June, and then rises again towards the end of the year, with December showing a significant increase, suggesting seasonal influences on electricity demand among households.')    
     st.write('')
     st.altair_chart(use_chart+nightUsage_chart if showNightUsage else use_chart, use_container_width=True)
-    st.caption("Average monthly electricity usage (and night usage) per month in kWh/day")
+    st.caption("Figure 6: Average monthly electricity usage (and night usage) per month in kWh/day")
 
 if viz == "Summary and Conclusions":
     st.title("Summary and Conclusions")
