@@ -255,7 +255,7 @@ if viz == "EasyGreen Geospatial Data":
         age_data=data[data.index<0]
         for i,age_group in enumerate(age_groups):
             if age_group:
-                age_data=pd.concat(age_data,data[age_group_ind[i]])
+                age_data=pd.concat([age_data,data[age_group_ind[i]]])
         data=age_data.copy()
 
     ## Production range
