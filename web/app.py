@@ -64,7 +64,7 @@ if viz=="Home":
     st.write("Our project is organized into three primary sections. The first section deals with total solar energy production and demand in Denmark in the context of rising gas prices. The second and third section are both based on data from the private solar energy company “EasyGreen”. Their dataset contains information on daily electricity usage and production on a household level. Geospatial visualizations as well as comparisons of production and self-usage can be explored. Subsequently, the main findings of the comparative analysis are summarized.")
     st.write('')
     st.image('images/houses_solar_panels.jpeg',width=500)
-    st.caption("Figure 1: Image created using Microsoft Copilot with the prompt Houses with solar panels")
+    st.caption('Figure 1: Image created using Microsoft Copilot with the prompt "Houses with solar panels"')
 if viz == "Solar Energy Data in Denmark":
     # Integrafe html plot
     st.title("An Introduction to the Danish Solar Power Landscape")
@@ -228,7 +228,9 @@ if viz == "EasyGreen Geospatial Data":
 
     # Sort by usage_date
     data = data.sort_values(by='usage_date')
-    # Filters
+    
+    #create self-usage ratio
+    data['self_use_ratio']=data['totalSelfUsePower']/data['totalProductPower']
 
     ## example return (datetime.date(2024, 1, 31), datetime.date(2024, 3, 28))
     selected_date_range = st.sidebar.date_input("Filter map by system installation date", value=(data['usage_date'].min(), data['usage_date'].max()), min_value=data['usage_date'].min(), max_value=data['usage_date'].max())
@@ -255,7 +257,7 @@ if viz == "EasyGreen Geospatial Data":
         age_data=data[data.index<0]
         for i,age_group in enumerate(age_groups):
             if age_group:
-                age_data=pd.concat(age_data,data[age_group_ind[i]])
+                age_data=pd.concat([age_data,data[age_group_ind[i]]])
         data=age_data.copy()
 
     ## Production range
@@ -265,23 +267,23 @@ if viz == "EasyGreen Geospatial Data":
 
     data.reset_index(inplace=True)
 
-    elevation = st.sidebar.radio("Analyze Map By", ('Average Production Per Day','Average Utilized Production Per Day', 'Age'))
+    elevation = st.sidebar.radio("Analyze Map By", ('Average Production Per Day','Self-Used Share of Production Per Day'))
     
     if elevation == 'Average Production Per Day':
         elevation_weight = 'totalProductPower'
-    elif elevation == 'Average Utilized Production Per Day':
-        elevation_weight = 'totalSelfUsePower'
-    elif elevation == 'Age':
-        elevation_weight = 'age'
+    elif elevation == 'Self-Used Share of Production Per Day':
+        elevation_weight = 'self_use_ratio'
+    # elif elevation == 'Age':
+    #     elevation_weight = 'age'
     
-    if elevation == 'Average Production Per Day':
-        st.subheader("Visualization of Solar Power Production by EasyGreen Customers Across Denmark")
-        st.write('')
-        st.write("One way to represent data provided by EasyGreen is to spatially visualize the solar power production of their customers across Denmark. The age group and location of each household are provided and allow for a detailed analysis. Feel free to explore the data by adjusting the sliders on the sidebar.")
-        st.write('The plot displays a 3D hexagonal bin map visualization centered over Denmark, highlighting solar power production data for EasyGreen\'s customers. Each hexagonal column represents the geographic clustering of customers, and the height of the columns is proportional to the average daily solar power production. The highest solar power outputs are indicated by the tallest columns, color-coded in red and orange. The map provides geographic and quantitative insights into solar power distribution among EasyGreen\'s customer base.')
-    elif elevation == 'Age':
-        st.subheader("Visualization of EasyGreen's Customer Age Distribution Across Denmark")
-        st.write('The plot displays a heatmap distribution of EasyGreen\'s customers across Denmark, color-coded by age. The most concentrated areas with the oldest customer base are shown in red, with decreasing age groups represented by cooler colors, yellow to white. The densest area of older customers is located in the eastern part of Denmark. The heatmap settings have been configured to restrict zooming capabilities to safeguard privacy, ensuring individual customer data cannot be discerned, allowing only a macro view of the age distribution.')
+    #if elevation == 'Average Production Per Day':
+    st.subheader("Visualization of Solar Power Production and Self-Usage share by EasyGreen Customers Across Denmark")
+    st.write('')
+    st.write("One way to represent the data provided by EasyGreen is to spatially visualize the solar power production and ratio of self-used power of their customers across Denmark. The age group and location of each household are provided and allow for a detailed analysis. Feel free to explore the data by adjusting the slider and drop-down menu on the sidebar.")
+    st.write('The plot displays a 3D hexagonal bin map visualization centered over Denmark, highlighting solar power production data for EasyGreen\'s customers. Each hexagonal column represents the geographic clustering of customers, and the height of the columns is proportional to the average daily solar power production. The highest solar power outputs are indicated by the tallest columns, color-coded in red and orange. The map provides geographic and quantitative insights into solar power distribution among EasyGreen\'s customer base.')
+    # elif elevation == 'Age':
+    #     st.subheader("Visualization of EasyGreen's Customer Age Distribution Across Denmark")
+    #     st.write('The plot displays a heatmap distribution of EasyGreen\'s customers across Denmark, color-coded by age. The most concentrated areas with the oldest customer base are shown in red, with decreasing age groups represented by cooler colors, yellow to white. The densest area of older customers is located in the eastern part of Denmark. The heatmap settings have been configured to restrict zooming capabilities to safeguard privacy, ensuring individual customer data cannot be discerned, allowing only a macro view of the age distribution.')
 
 
     layer = pdk.Layer(
@@ -317,7 +319,7 @@ if viz == "EasyGreen Geospatial Data":
     )
 
     st.pydeck_chart(r)    
-    st.caption("Figure 4: Geospatial distribution of EasyGreen's customers based on solar power production and age")
+    st.caption("Figure 4: Geospatial distribution of EasyGreen's customers based on solar power production / self usage and age")
 
 # Accumulated production per month
 
@@ -330,7 +332,8 @@ if viz == "EasyGreen Production Development":
     st.subheader("EasyGreen's Solar Power Production and Utilization")
     st.write("The bar chart presents the average solar power production per month for EasyGreen's customers, measured in kWh/day. Each bar corresponds to a month, with its total height reflecting the average daily production and the darker green portion indicating the average utilized production. There is a clear seasonal trend, with the highest production occurring in the summer months, peaking in July, and the lowest in December, showcasing the variance in solar power generation and utilization throughout the year.")
     st.write('')
-
+    st.write("Especially in the months of March and April, there seems to be a strong potential to use a higher share of the available solar energy. These months tend to remain relatively cold in Denmark, leading to a higher usage of electricity at home. However, in spring it can already be quite sunny, with the opportunity to produce a significant amount of solar energy.")
+    st.write('')
     showSelfUse = st.sidebar.toggle('Show Utilized Production', True)    
     showNightUsage = st.sidebar.toggle('Show Night Usage', False, help = 'Night usage is calculated as the usage between 18:00 and 06:00')
     
@@ -404,10 +407,13 @@ if viz == "EasyGreen Production Development":
     st.altair_chart(production_chart+selfUse_chart if showSelfUse else production_chart, use_container_width=True)
     st.caption("Figure 5: Average monthly solar power production (and utilized production) in kWh/day")
 
-    st.subheader('Day and Night Electricity Usage')
-    st.write('The bar chart represents the average daily electricity usage at home, measured in kWh, for each month. Each bar reflects the total average consumption per day within the respective month. Usage is highest in January and decreases through to the warmer months, with the lowest consumption in June, and then rises again towards the end of the year, with December showing a significant increase, suggesting seasonal influences on electricity demand among households.')    
+    st.subheader('Household Electricity Usage')
+    st.write('The following bar chart represents the average daily electricity usage at home and the amount of self-produced and used solar power, measured in kWh, for each month. Usage is highest in January and decreases through to the warmer months, with the lowest consumption in June, and then rises again towards the end of the year, with December showing a significant increase, suggesting seasonal influences on electricity demand among households. During the summer months, the self-produced solar power can cover a large share of the used power.')
     st.write('')
-    st.altair_chart(use_chart+nightUsage_chart if showNightUsage else use_chart, use_container_width=True)
+    if showSelfUse:
+        st.altair_chart(use_chart+nightUsage_chart+selfUse_chart if showNightUsage else use_chart+selfUse_chart, use_container_width=True)
+    else:
+        st.altair_chart(use_chart+nightUsage_chart if showNightUsage else use_chart, use_container_width=True)
     st.caption("Figure 6: Average monthly electricity usage (and night usage) per month in kWh/day")
 
 if viz == "Summary and Conclusions":
