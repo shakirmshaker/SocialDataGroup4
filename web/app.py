@@ -271,16 +271,16 @@ if viz == "EasyGreen Geospatial Data":
 
     data.reset_index(inplace=True)
 
-    elevation = st.sidebar.radio("Analyze Map By", ('Average Production Per Day','Self-Used Share of Production Per Day'))
+    elevation = st.sidebar.radio("Analyze map by", ('Average production per day','Self-used share of production per day'))
     
-    if elevation == 'Average Production Per Day':
+    if elevation == 'Average production per day':
         elevation_weight = 'totalProductPower'
-    elif elevation == 'Self-Used Share of Production Per Day':
+    elif elevation == 'Self-used share of production per day':
         elevation_weight = 'self_use_ratio'
     # elif elevation == 'Age':
     #     elevation_weight = 'age'
     
-    #if elevation == 'Average Production Per Day':
+    #if elevation == 'Average production per day':
     st.subheader("Visualization of Solar Power Production and Self-Usage Share by EasyGreen Customers Across Denmark")
     st.write('')
     st.write("One way to represent the data provided by EasyGreen is to spatially visualize the solar power production and ratio of self-used power of their customers across Denmark. The age group and location of each household are provided and allow for a detailed analysis. Feel free to explore the data by adjusting the slider and drop-down menu on the sidebar.")
@@ -414,6 +414,8 @@ if viz == "EasyGreen Production Development":
     st.subheader('Household Electricity Usage')
     st.write('The following bar chart represents the average daily electricity usage at home and the amount of self-produced and used solar power, measured in kWh, for each month. Usage is highest in January and decreases through to the warmer months, with the lowest consumption in June, and then rises again towards the end of the year, with December showing a significant increase, suggesting seasonal influences on electricity demand among households. During the summer months, the self-produced solar power can cover a large share of the used power.')
     st.write('')
+    st.write('Unfortunately, the night usage of electricity (between 18:00 and 06:00) is highest during the winter months, when very little sunlight is available to satisfy this demand.')
+    st.write('')
     if showSelfUse:
         st.altair_chart(use_chart+nightUsage_chart+selfUse_chart if showNightUsage else use_chart+selfUse_chart, use_container_width=True)
     else:
@@ -422,27 +424,24 @@ if viz == "EasyGreen Production Development":
 
 if viz == "Summary and Conclusions":
     st.title("Summary and Conclusions")
-    
-    # st.write("The analysis of solar power production and usage data in Denmark provides valuable insights into the country's energy dynamics, customer distribution, and response to gas market fluctuations. The project delves into the seasonal trends in solar power generation, highlighting the peak production months and the corresponding dip in winter. The data also reveals a direct correlation between the surge in gas prices and the increased interest in solar power solutions among Danish citizens, leading to a rise in solar investments and production.")
-    # st.write('')
-    # st.write("The geospatial analysis of EasyGreen's customer data showcases the distribution of solar power production and customer age across Denmark. The 3D hexagonal bin map visualizes the clustering of customers based on their solar power production, providing insights into the geographic concentration of solar energy generation. The heatmap representation of customer age distribution reveals the age demographics of EasyGreen's customers, with the eastern part of Denmark showing a higher concentration of older customers.")
-    # st.write('')
-    # st.write("The monthly production and usage analysis demonstrates the seasonal trends in solar power generation and electricity consumption. The bar charts display the average daily solar power production, utilized production, and electricity usage per month, highlighting the fluctuations in solar power generation and consumption throughout the year. The data indicates a direct relationship between solar power production and electricity usage, with the highest production and consumption occurring in the winter months.")
-    # st.write('')
-    # st.write("In conclusion, the project provides a comprehensive analysis of solar power dynamics in Denmark, offering insights into solar energy production, customer distribution, and energy usage. The findings underscore the importance of solar power as a sustainable energy source and its potential to mitigate the impact of rising gas prices. The project aims to inform policymakers, energy companies, and the public about the benefits of solar energy and the need for increased investments in renewable energy solutions.")
-    # st.write('')
+    st.write('In a nutshell, the previous pages describe the solar energy landscape in Denmark. The first section illustrates the effect of increasing energy prices due to the war in Ukraine as well as other geopolitical events. Both the produced power from solar as well as the interest in solar energy have increased during the last years.')
+    st.write('')
+    st.write('Furthermore, the usage of self-produced solar energy was portrayed in detail across various regions and age groups. Extensive analysis is facilitated throughout different age groups, production ranges and installation dates. The most prominent differences become apparent between the Copenhagen area and the rest of Denmark, as well as when comparing lower and higher production ranges.')
+    st.write('')
+    st.write('Lastly, household solar production, power usage and self-usage of produced power are visualized, highlighting the seasonal variations and opportunities for a higher usage of solar energy.')
+
 
 if viz == "Sources":
     st.title("Sources")
-    st.write("The data used in this project was provided by EasyGreen, a Danish company specializing in solar energy solutions. The project utilized solar power production and usage data, as well as geospatial data on EasyGreen's customers, to analyze solar energy dynamics in Denmark.")
+    st.write("The data used in this project was provided by EasyGreen, a Danish company specializing in solar energy solutions. The project utilized solar power production and usage data, as well as geospatial and age data from EasyGreen's customers, to analyze solar energy dynamics in Denmark.")
     st.write('')
     st.write("The project also incorporated data from Google Trends as well as the Danish organizations Energidataservice and Energistyrelsen. Please see the following links for more information.")
     st.write('')
-    st.write("https://www.energidataservice.dk/tso-electricity/Forecasts_Hour")
+    st.write("EnergiDataService - Electricity Forecasts: https://www.energidataservice.dk/tso-electricity/Forecasts_Hour. Accessed on 29 April 2024.")
     st.write('')
-    st.write("https://ens.dk/service/statistik-data-noegletal-og-kort")
+    st.write("Danish Energy Agency - Statistik, Data, Nøgletal og Kort: https://ens.dk/service/statistik-data-noegletal-og-kort. Accessed on 29 April 2024.")
     st.write('')
-    st.write("https://trends.google.com/trends/explore?date=today%205-y&geo=DK&q=%2Fm%2F078kl")
+    st.write("Google Trends: https://trends.google.com/trends/explore?date=today%205-y&geo=DK&q=%2Fm%2F078kl. Accessed on 29 April 2024.")
 st.sidebar.write('---')
 
 
