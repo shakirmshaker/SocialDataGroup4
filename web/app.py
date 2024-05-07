@@ -212,7 +212,8 @@ if viz == "Solar Energy Data in Denmark":
 ## Map plot
 
 if viz == "EasyGreen Geospatial Data":
-    st.title("EasyGreen Geospatial Data")     
+    st.title("EasyGreen Geospatial Data")
+
 
     # Group by user_id and get the first usage_date and sum of totalProductPower
     data = data.groupby('user_id').agg({'usage_date': 'min',
@@ -226,11 +227,15 @@ if viz == "EasyGreen Geospatial Data":
     # Drop rows with missing latitude or longitude
     data.dropna(subset=['latitude', 'longitude', 'totalProductPower', 'totalSelfUsePower', 'age'], inplace=True)
 
+    #create self-usage ratio
+    data['self_use_ratio']=data['totalSelfUsePower']/data['totalProductPower']
+
+
     # Sort by usage_date
     data = data.sort_values(by='usage_date')
     
-    #create self-usage ratio
-    data['self_use_ratio']=data['totalSelfUsePower']/data['totalProductPower']
+
+
 
     ## example return (datetime.date(2024, 1, 31), datetime.date(2024, 3, 28))
     selected_date_range = st.sidebar.date_input("Filter map by system installation date", value=(data['usage_date'].min(), data['usage_date'].max()), min_value=data['usage_date'].min(), max_value=data['usage_date'].max())
@@ -277,7 +282,7 @@ if viz == "EasyGreen Geospatial Data":
     #     elevation_weight = 'age'
     
     #if elevation == 'Average Production Per Day':
-    st.subheader("Visualization of Solar Power Production and Self-Usage share by EasyGreen Customers Across Denmark")
+    st.subheader("Visualization of Solar Power Production and Self-Usage Share by EasyGreen Customers Across Denmark")
     st.write('')
     st.write("One way to represent the data provided by EasyGreen is to spatially visualize the solar power production and ratio of self-used power of their customers across Denmark. The age group and location of each household are provided and allow for a detailed analysis. Feel free to explore the data by adjusting the slider and drop-down menu on the sidebar.")
     st.write('The plot displays a 3D hexagonal bin map visualization centered over Denmark, highlighting solar power production data for EasyGreen\'s customers. Each hexagonal column represents the geographic clustering of customers, and the height of the columns is proportional to the average daily solar power production. The highest solar power outputs are indicated by the tallest columns, color-coded in red and orange. The map provides geographic and quantitative insights into solar power distribution among EasyGreen\'s customer base.')
@@ -432,11 +437,11 @@ if viz == "Sources":
     st.title("Sources")
     st.write("The data used in this project was provided by EasyGreen, a Danish company specializing in solar energy solutions. The project utilized solar power production and usage data, as well as geospatial data on EasyGreen's customers, to analyze solar energy dynamics in Denmark.")
     st.write('')
-    st.write("The project also incorporated data from Energiedataservie, Energistyrelsen and Google Trends. Please see the following links for more information.")
+    st.write("The project also incorporated data from Google Trends as well as the Danish organizations Energidataservice and Energistyrelsen. Please see the following links for more information.")
     st.write('')
     st.write("https://www.energidataservice.dk/tso-electricity/Forecasts_Hour")
     st.write('')
-    st.write("https://ens.dk/service/statistik-data-noegletal-og-kort/priser-paa-el-og-gas")
+    st.write("https://ens.dk/service/statistik-data-noegletal-og-kort")
     st.write('')
     st.write("https://trends.google.com/trends/explore?date=today%205-y&geo=DK&q=%2Fm%2F078kl")
 st.sidebar.write('---')
