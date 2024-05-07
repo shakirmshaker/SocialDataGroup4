@@ -451,4 +451,4 @@ st.sidebar.write("This project was created in the 02806 Social data analysis and
 st.sidebar.write(" * Shakir Maytham Shaker")
 st.sidebar.write(" * Magnus Mac Doberenz")
 st.sidebar.write(" * Yili Ge")
-st.sidebar.download_button("Download Complete Notebook", open("../final/explainer.ipynb").read(), 'SolarEnergyProject.ipynb')
+st.sidebar.download_button("Download Complete Notebook", open("https://nbviewer.org/github/shakirmshaker/SocialDataGroup4/blob/main/final/explainer.ipynb").read(), 'SolarEnergyProject.ipynb')
