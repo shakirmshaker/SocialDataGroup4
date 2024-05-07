@@ -4,6 +4,7 @@ from streamlit.components.v1 import html
 import pydeck as pdk
 import altair as alt
 import os
+import numpy as np
 
 
 st.set_page_config(
@@ -62,7 +63,9 @@ if viz=="Home":
     st.write('')
     st.write("Our project is organized into three primary sections. The first section deals with total solar energy production and demand in Denmark in the context of rising gas prices. The second and third section are both based on data from the private solar energy company “EasyGreen”. Their dataset contains information on daily electricity usage and production on a household level. Geospatial visualizations as well as comparisons of production and self-usage can be explored. Subsequently, the main findings of the comparative analysis are summarized.")
     st.write('')
-    st.image('images/houses_solar_panels.jpeg',width=500)
+
+    st.image('images/solarPowerHouses.jpg',width=1000)
+
     st.caption('Figure 1: Image created using Microsoft Copilot with the prompt "Houses with solar panels"')
 if viz == "Solar Energy Data in Denmark":
     # Integrafe html plot
@@ -227,14 +230,11 @@ if viz == "EasyGreen Geospatial Data":
     data.dropna(subset=['latitude', 'longitude', 'totalProductPower', 'totalSelfUsePower', 'age'], inplace=True)
 
     #create self-usage ratio
-    data['self_use_ratio']=data['totalSelfUsePower']/data['totalProductPower']
-
+    # data['self_use_ratio'] = np.where(data['totalProductPower'] == 0, 0, data['totalSelfUsePower'] / data['totalProductPower'])
+    # data['self_use_ratio'] = np.minimum(data['self_use_ratio'], 1)
 
     # Sort by usage_date
     data = data.sort_values(by='usage_date')
-    
-
-
 
     ## example return (datetime.date(2024, 1, 31), datetime.date(2024, 3, 28))
     selected_date_range = st.sidebar.date_input("Filter map by system installation date", value=(data['usage_date'].min(), data['usage_date'].max()), min_value=data['usage_date'].min(), max_value=data['usage_date'].max())
@@ -271,30 +271,29 @@ if viz == "EasyGreen Geospatial Data":
 
     data.reset_index(inplace=True)
 
-    elevation = st.sidebar.radio("Analyze map by", ('Average production per day','Self-used share of production per day'))
+    elevation = st.sidebar.radio("Analyze map by", ('Average production per day','Self-used power of production per day'))
     
     if elevation == 'Average production per day':
         elevation_weight = 'totalProductPower'
-    elif elevation == 'Self-used share of production per day':
-        elevation_weight = 'self_use_ratio'
+    elif elevation == 'Self-used power of production per day':
+        elevation_weight = 'totalSelfUsePower'
     # elif elevation == 'Age':
     #     elevation_weight = 'age'
     
     #if elevation == 'Average production per day':
     st.subheader("Visualization of Solar Power Production and Self-Usage Share by EasyGreen Customers Across Denmark")
     st.write('')
-    st.write("One way to represent the data provided by EasyGreen is to spatially visualize the solar power production and ratio of self-used power of their customers across Denmark. The age group and location of each household are provided and allow for a detailed analysis. Feel free to explore the data by adjusting the slider and drop-down menu on the sidebar.")
+    st.write("One way to represent the data provided by EasyGreen is to spatially visualize the solar power production and self-used power of their customers across Denmark. The age group and location of each household are provided and allow for a detailed analysis. Feel free to explore the data by adjusting the slider and drop-down menu on the sidebar.")
     st.write('The plot displays a 3D hexagonal bin map visualization centered over Denmark, highlighting solar power production data for EasyGreen\'s customers. Each hexagonal column represents the geographic clustering of customers, and the height of the columns is proportional to the average daily solar power production. The highest solar power outputs are indicated by the tallest columns, color-coded in red and orange. The map provides geographic and quantitative insights into solar power distribution among EasyGreen\'s customer base.')
     # elif elevation == 'Age':
     #     st.subheader("Visualization of EasyGreen's Customer Age Distribution Across Denmark")
     #     st.write('The plot displays a heatmap distribution of EasyGreen\'s customers across Denmark, color-coded by age. The most concentrated areas with the oldest customer base are shown in red, with decreasing age groups represented by cooler colors, yellow to white. The densest area of older customers is located in the eastern part of Denmark. The heatmap settings have been configured to restrict zooming capabilities to safeguard privacy, ensuring individual customer data cannot be discerned, allowing only a macro view of the age distribution.')
 
-
     layer = pdk.Layer(
         "HexagonLayer" if elevation_weight != 'age' else "HeatmapLayer",
         data=data,
         get_position="[longitude, latitude]",
-        auto_highlight=True,
+        #auto_highlight=True,
         elevation_scale=3000,
         pickable=True,
         get_polygon="-",
@@ -303,7 +302,7 @@ if viz == "EasyGreen Geospatial Data":
         elevation_range=[0, max_range],
         extruded=True,
         coverage=1,
-        get_elevation_weight = elevation_weight,
+        get_elevation_weight = elevation_weight
     )
 
     view_state = pdk.ViewState(
@@ -316,11 +315,11 @@ if viz == "EasyGreen Geospatial Data":
     r = pdk.Deck(
         map_style="mapbox://styles/mapbox/dark-v9",
         layers=[layer],
-        initial_view_state=view_state,
+        initial_view_state=view_state,        
         tooltip={
-                "html":f"<b>{elevation}:</b> {{elevationValue}}<br>",
-                "style": {"color": "white"}}        
-    )
+        "html":f"<b>{elevation}:</b> {{elevationValue}}<br>",
+        "style": {"color": "white"}
+        })
 
     st.pydeck_chart(r)    
     st.caption("Figure 4: Geospatial distribution of EasyGreen's customers based on solar power production / self usage and age")
