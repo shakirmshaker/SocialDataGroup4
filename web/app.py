@@ -428,7 +428,7 @@ if viz == "Summary and Conclusions":
     st.write('')
     st.write('Furthermore, the usage of self-produced solar energy was portrayed in detail across various regions and age groups. Extensive analysis is facilitated throughout different age groups, production ranges and installation dates. The most prominent differences become apparent between the Copenhagen area and the rest of Denmark, as well as when comparing lower and higher production ranges.')
     st.write('')
-    st.write('Lastly, household solar production, power usage and self-usage of produced power are visualized, highlighting the seasonal variations and opportunities for a higher usage of solar energy.')
+    st.write('Lastly, household solar production, power usage and self-usage of produced power are visualized, highlighting seasonal variations as well as opportunities for a higher usage of solar energy. Especially the usage during night hours varies significantly from summer to winter.')
 
 
 if viz == "Sources":
