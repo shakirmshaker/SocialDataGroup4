@@ -190,7 +190,7 @@ if viz == "Solar Energy Data in Denmark":
 
     # First line chart
     line1 = base.mark_line(color='blue').encode(
-        alt.Y('Index', axis=alt.Axis(title='Index', titleColor='blue'))
+        alt.Y('Index', axis=alt.Axis(title='Search Index', titleColor='blue'))
     )
 
     # Second line chart
@@ -300,7 +300,7 @@ if viz == "EasyGreen Geospatial Data":
         get_polygon="-",
         get_fill_color=[0, 0, 0, 20],
         stroked=False,
-        elevation_range=[0, max_range] if elevation_weight == 'totalProductPower' else [0, 1],
+        elevation_range=[0, max_range],
         extruded=True,
         coverage=1,
         get_elevation_weight = elevation_weight,
