@@ -36,7 +36,6 @@ if 'data' not in st.session_state:
 
     #remove outliers
     data=data[(data.totalUsePower<500) & (data.totalProductPower<500) & (data.totalSelfUsePower<500) & (data.totalBuyPower<500)]
-    data=data[(data.age>=18) & (data.age<=99)]
     # remove max value from data['totalUsePower']
 
     # usePowerMax = data['totalUsePower'].max()
@@ -301,7 +300,7 @@ if viz == "EasyGreen Geospatial Data":
         get_polygon="-",
         get_fill_color=[0, 0, 0, 20],
         stroked=False,
-        elevation_range=[0, max_range],
+        elevation_range=[0, max_range] if elevation_weight == 'totalProductPower' else [0, 1],
         extruded=True,
         coverage=1,
         get_elevation_weight = elevation_weight,
