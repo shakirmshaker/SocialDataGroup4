@@ -59,9 +59,20 @@ viz = st.sidebar.selectbox("Select page", ["Home","Solar Energy Data in Denmark"
 
 if viz=="Home":
     st.title("Course 02806 | Analysis of Solar Energy Usage and Production in Denmark")
-    st.write("Welcome to our Solar Energy Project. Here, we delve into the fascinating world of solar power production and usage in Denmark. Please select the page you wish to explore on the sidebar to the left. There, you can also filter the data to customize your analysis.")
-    st.write('')
-    st.write("Our project is organized into three primary sections. The first section deals with total solar energy production and demand in Denmark in the context of rising gas prices. The second and third section are both based on data from the private solar energy company “EasyGreen”. Their dataset contains information on daily electricity usage and production on a household level. Geospatial visualizations as well as comparisons of production and self-usage can be explored. Subsequently, the main findings of the comparative analysis are summarized.")
+    #st.write("Welcome to our Solar Energy Project. Here, we delve into the fascinating world of solar power production and usage in Denmark. Please select the page you wish to explore on the sidebar to the left. There, you can also filter the data to customize your analysis.")
+    st.write('Embark on an analytical exploration of solar energy within Denmark as we dissect the complex interactions between solar power production and consumption. Utilize the interactive sidebar on the left which enables you to refine your analysis by filtering the data.')    
+    st.write('''Our exploration is meticulously organized into three comprehensive sections:
+             
+* Supply and Demand Dynamics:
+Delve into an in-depth examination of Denmark's aggregate solar energy output in the context of escalating gas prices. This section elucidates the interdependencies between renewable energy production and conventional energy market fluctuations.
+\n * Household-Level Data Analysis with EasyGreen:             
+Obtain a detailed perspective through the dataset provided by "EasyGreen," a prominent private solar energy entity. This section presents an extensive analysis of daily electricity metrics at the household scale. Engage with our geospatial visualizations to observe regional performance disparities and analyze the proportionality of energy production versus self-consumption.
+\n * Comparative Analysis and Synthesis of Insights:
+Conclude your inquiry with a synthesized overview of our analytical findings. This section distills critical insights from the comparative data assessment, offering a nuanced understanding of efficiency enhancements and trends in solar energy utilization.''')
+    
+    st.write('Select a section and initiate your detailed examination of Denmark\'s solar energy framework, exploring the transformative impact of solar power on national energy consumption patterns and sustainability initiatives.')
+    
+    #st.write("Our project is organized into three primary sections. The first section deals with total solar energy production and demand in Denmark in the context of rising gas prices. The second and third section are both based on data from the private solar energy company “EasyGreen”. Their dataset contains information on daily electricity usage and production on a household level. Geospatial visualizations as well as comparisons of production and self-usage can be explored. Subsequently, the main findings of the comparative analysis are summarized.")
     st.write('')
 
     st.image('images/solarPowerHouses.jpg',width=1000)
